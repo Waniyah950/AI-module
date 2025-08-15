@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ruby’s AI Chat</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #1e1e2f;
+        color: white;
+        text-align: center;
+        padding: 20px;
+    }
+    #messages {
+        border: 1px solid #444;
+        padding: 10px;
+        height: 300px;
+        overflow-y: auto;
+        margin-bottom: 10px;
+        text-align: left;
+        background: #2a2a3d;
+    }
+    input, button {
+        padding: 10px;
+        margin: 5px;
+        border-radius: 5px;
+        border: none;
+    }
+    button {
+        background: #4cafef;
+        color: white;
+        cursor: pointer;
+    }
+    .typing {
+        display: inline-block;
+        animation: blink 1s infinite;
+    }
+    @keyframes blink {
+        0%, 50% { opacity: 1; }
+        51%, 100% { opacity: 0; }
+    }
+</style>
+</head>
+<body>
+    <h1>💬 Ruby’s AI Chat</h1>
+    <div id="messages"></div>
+    <input type="text" id="userInput" placeholder="Type your message">
+    <button onclick="sendMessage()">Send</button>
+
+<script>
+    const messagesDiv = document.getElementById("messages");
+
+    function addMessage(sender, text) {
+        const msg = document.createElement("div");
+        msg.innerHTML = `<strong>${sender}:</strong> ${text}`;
+        messagesDiv.appendChild(msg);
+        messagesDiv.scrollTop = messagesDiv.scrollHeight;
+    }
+
+    userInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") sendMessage();
+    });
+
+
+    async function sendMessage() {
+        const input = document.getElementById("userInput");
+        const userText = input.value;
+        if (!userText) return;
+
+        addMessage("You", userText);
+        input.value = "";
+
+        const typingEl = document.createElement("div");
+        typingEl.innerHTML = `<em class="typing">AI is typing...</em>`;
+        messagesDiv.appendChild(typingEl);
+
+        const res = await fetch("http://localhost:5000/api/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message: userText })
+        });
+
+        const data = await res.json();
+        typingEl.remove();
+
+        if (data.reply) {
+            addMessage("AI", data.reply);
+        } else {
+            addMessage("Error", data.error || "Something went wrong");
+        }
+    }
+</script>
+</body>
+</html>
